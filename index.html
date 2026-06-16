@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WBP Lady Constable 2018 - প্রথম ২৫ প্রশ্ন</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Noto Sans Bengali', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: #1e3c72;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        .login-form {
+            max-width: 400px;
+            margin: 60px auto;
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            border: 1px solid #ddd;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 17px;
+        }
+        .btn {
+            padding: 14px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .timer { font-size: 26px; font-weight: bold; color: #ff4757; margin-top: 10px; }
+        .question { padding: 20px 25px; border-bottom: 1px solid #eee; }
+        .q-number { font-weight: bold; color: #2980b9; margin-bottom: 10px; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+        .option {
+            padding: 15px 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .option:hover { border-color: #3498db; background: #eef5ff; }
+        .option.selected { background: #d4e6f8; border-color: #2980b9; }
+        .submit-btn { background: #27ae60; color: white; }
+        .result { display: none; }
+        .score { text-align: center; font-size: 52px; font-weight: bold; color: #27ae60; margin-bottom: 20px; }
+        .review-item {
+            margin: 18px 0;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+        .correct { background: #d4edda; border-color: #2ecc71; }
+        .wrong { background: #f8d7da; border-color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- লগইন -->
+        <div id="login-screen">
+            <div class="header">
+                <h1>WBP Lady Constable 2018</h1>
+                <h2>প্রথম ২৫ প্রশ্নের মক টেস্ট</h2>
+            </div>
+            <div class="login-form">
+                <h3 style="text-align:center; margin-bottom:20px;">লগইন করুন</h3>
+                <input type="text" id="username" placeholder="ইউজারনেম" required>
+                <input type="password" id="password" placeholder="পাসওয়ার্ড" required>
+                <button class="btn submit-btn" onclick="login()">লগইন করুন</button>
+                <p style="text-align:center; margin-top:15px; color:#555;">
+                    উদাহরণ: ram / 12345 , shyam / 12345 , jadu / 12345
+                </p>
+            </div>
+        </div>
+
+        <!-- কুইজ -->
+        <div id="quiz-screen" style="display:none;">
+            <div class="header">
+                <h1>WBP Lady Constable 2018 - প্রথম ২৫ প্রশ্ন</h1>
+                <div class="timer">সময় বাকি: <span id="time">60:00</span></div>
+            </div>
+            <div id="questions-container"></div>
+            <button class="btn submit-btn" onclick="submitQuiz()">কুইজ জমা দিন</button>
+        </div>
+
+        <!-- রেজাল্ট -->
+        <div class="result" id="result-screen">
+            <h2 style="text-align:center;">কুইজের ফলাফল</h2>
+            <div class="score" id="score"></div>
+            <div id="review-container" style="max-height: 650px; overflow-y: auto;"></div>
+            <button class="btn submit-btn" style="background:#3498db;" onclick="restartQuiz()">আবার শুরু করুন</button>
+        </div>
+    </div>
+
+    <script>
+        const users = {
+            "ram": "12345", "shyam": "12345", "jadu": "12345", "madhu": "12345",
+            "gopal": "12345", "krishna": "12345", "rahul": "12345", "priya": "12345",
+            "sita": "12345", "ravi": "12345"
+        };
+
+        function login() {
+            const username = document.getElementById('username').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            if (users[username] && users[username] === password) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('quiz-screen').style.display = 'block';
+                startTimer();
+                renderQuestions();
+            } else {
+                alert("ভুল ইউজারনেম বা পাসওয়ার্ড!");
+            }
+        }
+
+        const questions = [
+            {num:1, q:"তিনটি ঘণ্টা একবার একসাথে বাজার পর 10, 12 ও 15 সেকেন্ড অন্তর বাজতে থাকে। কতক্ষণ পরে তারা আবার একসাথে বাজবে?", options:["(A) 50 সেকেন্ড","(B) 70 সেকেন্ড","(C) 60 সেকেন্ড","(D) 40 সেকেন্ড"], answer:2, exp:"10, 12 ও 15 এর লসাগু (LCM) = 60 সেকেন্ড।"},
+            {num:2, q:"600-এর 20% = X-এর 25%। X-এর মান কত?", options:["(A) 460","(B) 500","(C) 480","(D) 440"], answer:2, exp:"600 এর 20% = 120। 25% of X = 120 ⇒ X = 120 × 4 = 480।"},
+            {num:3, q:"এক ব্যক্তি প্রথম 160 কিমি 64 কিমি/ঘণ্টা বেগে এবং পরের 160 কিমি 80 কিমি/ঘণ্টা বেগে অতিক্রম করে। গড়বেগ কত?", options:["(A) 36 কিমি/ঘণ্টা","(B) 71 কিমি/ঘণ্টা","(C) 71.11 কিমি/ঘণ্টা","(D) 35.55 কিমি/ঘণ্টা"], answer:2, exp:"মোট দূরত্ব = 320 কিমি, মোট সময় = 2.5 + 2 = 4.5 ঘণ্টা। গড়বেগ = 320 / 4.5 ≈ 71.11 কিমি/ঘণ্টা।"},
+            {num:4, q:"800 জনের 20 দিনের খাবার। 640 জন থাকলে কত দিন চলবে?", options:["(A) 23 দিন","(B) 30 দিন","(C) 25 দিন","(D) 18 দিন"], answer:2, exp:"মোট খাদ্য = 800 × 20 = 16000 man-days। 16000 / 640 = 25 দিন।"},
+            {num:5, q:"সাইকেলের ক্রয়মূল্য 4000 টাকা। 3200 টাকায় বিক্রি করলে ছাড়ের হার কত?", options:["(A) 16%","(B) 20%","(C) 18%","(D) 14%"], answer:1, exp:"ছাড় = 4000 - 3200 = 800 টাকা। ছাড়ের হার = (800/4000) × 100 = 20%।"},
+            {num:6, q:"কোন ক্ষুদ্রতম সংখ্যাকে 8, 12, 16 এবং 20 দিয়ে ভাগ করলে প্রতিবারই 5 ভাগশেষ থাকে?", options:["(A) 245","(B) 235","(C) 265","(D) 240"], answer:0, exp:"8,12,16,20 এর LCM = 240। প্রয়োজনীয় সংখ্যা = 240 + 5 = 245।"},
+            {num:7, q:"দুটি সংখ্যার অনুপাত 9:14। বৃহত্তর সংখ্যা ক্ষুদ্রতর থেকে 55 বেশি হলে সংখ্যা দুটি কত?", options:["(A) 99,156","(B) 43,98","(C) 47,102","(D) 99,154"], answer:3, exp:"5 অংশ = 55 ⇒ 1 অংশ = 11। সংখ্যা = 9×11=99, 14×11=154।"},
+            {num:8, q:"A এবং B এককভাবে একটি কাজ যথাক্রমে 6 ও 12 দিনে করতে পারে। 3 দিন একসাথে কাজ করার পর A চলে যায়। মোট কত দিন লাগবে?", options:["(A) 4 দিন","(B) 5 দিন","(C) 9 দিন","(D) 6 দিন"], answer:3, exp:"3 দিনে 3/4 কাজ হয়। বাকি 1/4 কাজ B একা 3 দিনে করে। মোট 6 দিন।"},
+            {num:9, q:"আয়তক্ষেত্রের ক্ষেত্রফল 460 বর্গমিটার। দৈর্ঘ্য প্রস্থের থেকে 15% বেশি হলে প্রস্থ কত?", options:["(A) 20 m","(B) 25 m","(C) 23 m","(D) 18 m"], answer:0, exp:"প্রস্থ = x, দৈর্ঘ্য = 1.15x → 1.15x² = 460 → x² = 400 → x = 20 মিটার।"},
+            {num:10, q:"যদি A:B = 3:4 এবং B:C = 6:5 হয়, তবে A:C = ?", options:["(A) 9:10","(B) 9:8","(C) 8:9","(D) 10:9"], answer:0, exp:"A:B = 9:12, B:C = 12:10 → A:C = 9:10।"},
+            {num:11, q:"নিম্নলিখিত আন্দোলনগুলিকে কালক্রমানুসারে সাজালে কোনটি সঠিক?", options:["(A) (iv),(iii),(ii),(i)","(B) (ii),(iv),(i),(iii)","(C) (iii),(ii),(i),(iv)","(D) (i),(ii),(iii),(iv)"], answer:2, exp:"হোমরুল (1916) → খিলাফৎ (1919) → আইন অমান্য (1930) → ভারত ছাড়ো (1942)।"},
+            {num:12, q:"URL-এর পুরো কথাটি কী?", options:["(A) Uniform Resource Link","(B) Uniform Registered Locator","(C) Unified Resource Link","(D) Uniform Resource Locator"], answer:3, exp:"Uniform Resource Locator"},
+            {num:13, q:"ভারতবর্ষের কোন রাজ্যে 2022 সালে 39তম জাতীয় ক্রীড়া প্রতিযোগিতা অনুষ্ঠিত হবে?", options:["(A) নাগাল্যান্ড","(B) আসাম","(C) মিজোরাম","(D) মেঘালয়"], answer:3, exp:"মেঘালয়"},
+            {num:14, q:"দেওধর ট্রফি কোন খেলার সাথে যুক্ত?", options:["(A) ফুটবল","(B) বাস্কেটবল","(C) হকি","(D) ক্রিকেট"], answer:3, exp:"ক্রিকেট"},
+            {num:15, q:"UNESCO দ্বারা ঘোষিত বিশ্বের কোন ঐতিহ্যশালী নির্মাণ পশ্চিমবঙ্গে অবস্থিত?", options:["(A) ভিক্টেরিয়া মেমোরিয়াল","(B) রাজা রামমোহন রায় মেমোরিয়াল","(C) করোনেশন ব্রীজ","(D) দার্জিলিং হিমালয়ান রেলওয়ে"], answer:3, exp:"দার্জিলিং হিমালয়ান রেলওয়ে"},
+            {num:16, q:"কোন স্থানে গৌতম বুদ্ধের মহাপ্রয়াণ হয়েছিল?", options:["(A) কুশিনগর","(B) কটক","(C) লুম্বিনী","(D) বৈশালী"], answer:0, exp:"কুশিনগর"},
+            {num:17, q:"পশ্চিমবঙ্গের কোন জেলার সাথে মানভূম জেলার একটি অংশ যুক্ত হয়েছে?", options:["(A) বাঁকুড়া","(B) পশ্চিম মেদিনীপুর","(C) বীরভূম","(D) পুরুলিয়া"], answer:3, exp:"পুরুলিয়া"},
+            {num:18, q:"কোন এশিয়াবাসী প্রথম নোবেল পুরস্কার পান?", options:["(A) আং সাঙ সুকি","(B) রবীন্দ্রনাথ ঠাকুর","(C) ইউসুফজাই মালালা","(D) সি. ভি. রমন"], answer:1, exp:"রবীন্দ্রনাথ ঠাকুর (১৯১৩)"},
+            {num:19, q:"কিসের জন্য গান্ধীজী অসহযোগ আন্দোলন বন্ধ করে দিয়েছিলেন?", options:["(A) দ্বিতীয় বিশ্বযুদ্ধ","(B) চৌরিচৌরার ঘটনা","(C) প্রথম বিশ্বযুদ্ধ","(D) জালিয়ানওয়ালাবাগ হত্যাকাণ্ড"], answer:1, exp:"চৌরিচৌরার ঘটনা"},
+            {num:20, q:"'আইন-ই-আকবরী' গ্রন্থটি কে রচনা করেছিলেন?", options:["(A) হুমায়ুন","(B) আবুল ফজল","(C) শাহজাহান","(D) আকবর"], answer:1, exp:"আবুল ফজল"},
+            {num:21, q:"Wi-Fi-র পুরো কথাটি কী?", options:["(A) Wired Fidelity","(B) Wired Field","(C) Wireless Field","(D) Wireless Fidelity"], answer:3, exp:"Wireless Fidelity"},
+            {num:22, q:"'এ প্যাসেজ টু ইন্ডিয়া' বইটি কার লেখা?", options:["(A) জওহরলাল নেহেরু","(B) ই. এম. ফস্টার","(C) ভিক্টর ব্যানার্জী","(D) মিনু মাসানী"], answer:1, exp:"ই. এম. ফস্টার"},
+            {num:23, q:"বৌদ্ধ ধর্মাবলম্বীদের জন্য কোন পাল রাজা বিক্রমশীলা বিশ্ববিদ্যালয় তৈরি করেছিলেন?", options:["(A) দেবপাল","(B) ধর্মপাল","(C) গোপাল","(D) মহীপাল"], answer:1, exp:"ধর্মপাল"},
+            {num:24, q:"রান্নার গ্যাসের মুখ্য উপাদান কী কী?", options:["(A) তরল বিউটেন ও আইসোবিউটেন","(B) হাইড্রোজেন ও অ্যাসিটিলিন","(C) ইথিলিন ও কার্বন মনোক্সাইড","(D) মিথেন ও ইথেন"], answer:0, exp:"তরল বিউটেন ও আইসোবিউটেন"},
+            {num:25, q:"কেরালার উপকূলভাগ কী নামে পরিচিত?", options:["(A) মালাবার","(B) উৎকল","(C) করমণ্ডল","(D) কোঙ্কন"], answer:0, exp:"মালাবার উপকূল"}
+        ];
+
+        let timerInterval, timeLeft = 60 * 60;
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const min = Math.floor(timeLeft / 60);
+                const sec = timeLeft % 60;
+                document.getElementById('time').textContent = `${min}:${sec < 10 ? '0' : ''}${sec}`;
+                if (timeLeft <= 0) submitQuiz(true);
+            }, 1000);
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = questions.map(q => `
+                <div class="question">
+                    <div class="q-number">প্রশ্ন ${q.num}.</div>
+                    <div>${q.q}</div>
+                    <div class="options" id="opt${q.num}"></div>
+                </div>
+            `).join('');
+
+            questions.forEach(q => {
+                const cont = document.getElementById(`opt${q.num}`);
+                q.options.forEach((opt, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'option';
+                    div.textContent = opt;
+                    div.onclick = () => {
+                        document.querySelectorAll(`#opt${q.num} .option`).forEach(el => el.classList.remove('selected'));
+                        div.classList.add('selected');
+                        q.selected = i;
+                    };
+                    cont.appendChild(div);
+                });
+            });
+        }
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            let score = 0;
+            let reviewHTML = '';
+
+            questions.forEach(q => {
+                const isCorrect = q.selected === q.answer;
+                if (isCorrect) score++;
+
+                const status = isCorrect ? 'correct' : 'wrong';
+                reviewHTML += `
+                    <div class="review-item ${status}">
+                        <strong>প্রশ্ন ${q.num}:</strong> ${q.q}<br><br>
+                        <strong>আপনার উত্তর:</strong> ${q.selected !== undefined ? q.options[q.selected] : "উত্তর দেননি"}<br>
+                        <strong>সঠিক উত্তর:</strong> ${q.options[q.answer]}<br>
+                        <strong>ব্যাখ্যা:</strong> ${q.exp}
+                    </div>`;
+            });
+
+            const percentage = Math.round((score / 25) * 100);
+            document.getElementById('quiz-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block';
+            document.getElementById('score').innerHTML = `${score} / 25 <br><small>${percentage}%</small>`;
+            document.getElementById('review-container').innerHTML = reviewHTML;
+        }
+
+        function restartQuiz() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
